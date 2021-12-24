@@ -1,0 +1,181 @@
+
+
+# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+# import logging
+# import tensorflow as tf
+# from seq2seq import Seq2seq
+# from data_handler import Data
+
+# from tensorflow.python import debug as tf_debug
+# from tensorflow.contrib.learn import learn_runner
+# tf.logging.set_verbosity(tf.logging.INFO)
+
+
+# FLAGS = tf.flags.FLAGS
+
+# # Model related
+# tf.flags.DEFINE_integer('num_units', 512,'Number of units in a LSTM cell')
+# tf.flags.DEFINE_integer('embed_dim', 300, 'Size of the embedding vector')
+
+# # Training related
+# tf.flags.DEFINE_float('learning_rate', 0.0001, 'learning rate for the optimizer')
+# tf.flags.DEFINE_string('optimizer', 'Adam', 'Name of the train source file')
+# tf.flags.DEFINE_integer('batch_size', 32, 'random seed for training sampling')
+# tf.flags.DEFINE_integer('print_every', 300, 'print records every n iteration')
+# tf.flags.DEFINE_integer('iterations', 20000, 'number of iterations to train')
+# # tf.flags.DEFINE_string('model_dir'          , 'checkpoints' , 'Directory where to save the model')
+# tf.flags.DEFINE_string('experiment_dir',
+#                        'experiments/bidirectional_encoder_300d_embeddings' ,
+#                        'Directory where to save the experiment')
+
+# tf.flags.DEFINE_integer('input_max_length', 30, 'Max length of input sequence to use')
+# tf.flags.DEFINE_integer('output_max_length', 30, 'Max length of output sequence to use')
+# tf.flags.DEFINE_integer('max_length', 30, 'Max length of output sequence to use')
+# tf.flags.DEFINE_bool('use_residual_lstm', True, 'To use the residual connection with the residual LSTM')
+
+# # Data related
+# tf.flags.DEFINE_string('input_filename', 'data/mscoco/train_source.txt', 'Name of the train source file')
+# tf.flags.DEFINE_string('output_filename', 'data/mscoco/train_target.txt', 'Name of the train target file')
+# tf.flags.DEFINE_string('vocab_filename', 'data/mscoco/train_vocab.txt', 'Name of the vocab file')
+model="Vamsi/T5_Paraphrase_Paws"
+# tf.flags.DEFINE_string('shuffled_filename', 'data/mscoco/train_target_shuffled.txt', 'Name of shuffled targets')
+# tf.flags.DEFINE_string('word_vectors', 'data/glove/glove.6B.300d.txt', 'Name of word vectors file')
+# tf.flags.DEFINE_float('remove_word_prob', 0.05, 'Probability of dropping each word in the source')
+# tf.flags.DEFINE_float('swap_words_prob', 0.05, 'Probability of swapping adjacent words in the source')
+
+
+
+# def run_experiment(argv=None):
+
+#     run_config = tf.contrib.learn.RunConfig()
+#     run_config = run_config.replace(model_dir=FLAGS.experiment_dir)
+
+#     learn_runner.run(experiment_fn=experiment_fn,
+#                      run_config=run_config,
+#                      schedule='train_and_evaluate'
+#                     )
+
+# def experiment_fn(run_config, params):
+#     data = Data(FLAGS)
+#     data.initialize_word_vectors()
+
+#     model = Seq2seq(data.vocab_size, FLAGS, data.embeddings_mat)
+#     estimator = tf.estimator.Estimator(model_fn=model.make_graph,
+# #                                        model_dir=FLAGS.model_dir,
+#                                        config=run_config,
+#                                        params=FLAGS)
+
+#     train_input_fn, train_feed_fn = data.make_input_fn('train')
+#     eval_input_fn, eval_feed_fn = data.make_input_fn('test')
+
+#     print_vars = [
+#         'source',
+#         'predict'
+#         # 'decoder_output',
+#         # 'actual'
+#     ]
+#     print_inputs = tf.train.LoggingTensorHook(print_vars ,
+#                                               every_n_iter=FLAGS.print_every,
+#                                               formatter=data.get_formatter(['source', 'predict']))
+
+#     experiment = tf.contrib.learn.Experiment(
+#         estimator=estimator,
+#         train_input_fn=train_input_fn,
+#         eval_input_fn=eval_input_fn,
+#         train_steps=FLAGS.iterations,
+#         min_eval_frequency=FLAGS.print_every,
+#         train_monitors=[tf.train.FeedFnHook(train_feed_fn), print_inputs],
+#         eval_hooks=[tf.train.FeedFnHook(eval_feed_fn)],
+#         eval_steps=10
+#     )
+#     return experiment
+
+# if __name__ == "__main__":
+#     tf.app.run(
+#         main=run_experiment
+#     )
+
+# # def main(args):
+# #     tf.logging._logger.setLevel(logging.INFO)
+# #
+# #     data  = Data(FLAGS)
+# #     model = Seq2seq(data.vocab_size, FLAGS)
+# #
+# #     input_fn, feed_fn = data.make_input_fn()
+# #     print_vars = [
+# #         'source_ex',
+# #         'target_ex',
+# #         'predict'
+# #         # 'decoder_output',
+# #         # 'actual'
+# #         ]
+# #     print_inputs = tf.train.LoggingTensorHook(print_vars ,
+# #                                               every_n_iter=FLAGS.print_every,
+# #                                               formatter=data.get_formatter(['source_ex', 'target_ex', 'predict']))
+# #
+# #     hooks = [
+# #         tf.train.FeedFnHook(feed_fn),
+# #         # tf_debug.LocalCLIDebugHook()
+# #         print_inputs
+# #         ]
+# #
+# #     estimator = tf.estimator.Estimator(model_fn=model.make_graph, model_dir=FLAGS.model_dir, params=FLAGS)
+# #     estimator.train(input_fn=input_fn, hooks=hooks, steps=FLAGS.iterations)
+# #
+# # if __name__ == "__main__":
+# #     tf.app.run()
+
+
+# import numpy as np
+# from seq2seq import Seq2seq
+
+# # %pylab inline
+# from inference import predict_paraphrase
+# sentence=sys.argv[1]
+# # print(sentence)
+# sentence=predict_paraphrase(sentence, .1)
+# print(sentence.replace('</S>',''))
+import sys
+import os
+# from inference import predict_paraphrase
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+
+tokenizer = AutoTokenizer.from_pretrained(model)
+model = AutoModelForSeq2SeqLM.from_pretrained(model)
+# sentence = sys.argv[1:]
+try:
+    from shlex import quote as cmd_quote
+except ImportError:
+    from pipes import quote as cmd_quote
+
+sentence = " ".join(map(cmd_quote, sys.argv[1:]))
+
+text =  "paraphrase: " + sentence + " </s>"
+
+encoding = tokenizer.encode_plus(text,pad_to_max_length=True, return_tensors="pt")
+input_ids, attention_masks = encoding["input_ids"], encoding["attention_mask"]
+
+
+outputs = model.generate(
+    input_ids=input_ids, attention_mask=attention_masks,
+    max_length=256,
+    do_sample=True,
+    top_k=120,
+    top_p=0.95,
+    early_stopping=False,
+    num_return_sequences=1
+)
+
+# print ("\n")
+# print("Origianl sentence:")
+# print(sentence)
+# print ("\n")
+# print("Paraphrasing:")
+# with open('filename.txt', 'w') as f:
+for output in outputs:
+        line = tokenizer.decode(output, skip_special_tokens=True,clean_up_tokenization_spaces=True)
+        print(line)
+        # print(line, file=f)
+
+    
+# f.close()
